@@ -1,0 +1,47 @@
+---
+title: "cs proj"
+author: "Conner Byrd"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r libraries, include=FALSE}
+library(dplyr)
+library(readr)
+library(knitr)
+library(tidyverse)
+library(caret)
+library(leaps)
+library(MASS)
+```
+
+```{r data import & cleaning, include=FALSE}
+hd <- read_csv("heart_2020_cleaned.csv")
+hd$HeartDisease <- ifelse(hd$HeartDisease == "Yes", 1, 0)
+```
+
+```{r full model}
+hd_full <- glm(HeartDisease ~ ., family = "binomial", data = hd)
+summary(hd_full)
+```
+
+```{r stepwise-backward}
+step_model <- stepAIC(hd_full, direction = "backward", trace = FALSE)
+summary(step_model)
+```
+
+```{r stepwise-forward}
+step_model <- stepAIC(hd_full, direction = "forward", trace = FALSE)
+summary(step_model)
+```
+
+- k-fold cv
+- stuff for prediction
+
+```{r}
+hd_risk <- glm(HeartDisease ~ Smoking + PhysicalHealth, family = "binomial", data = hd)
+summary(hd_risk)
+```
