@@ -34,6 +34,7 @@ library(pROC)
 library(corrr)
 library(randomForest)
 library(janitor)
+library(sjPlot)
 
 heart = read_csv("heart_2020_cleaned.csv") %>%
   as_tibble()
@@ -144,7 +145,7 @@ eda
 
 With the data all processed and cleaned, we then fit our initial full model. This will be the model from which we can further select variables and perform inference. We chose to fit a binomial GLM in order to model multiple numerical and categorical predictors against our response variable at once. 
 
-```{r full model, include = TRUE}
+```{r full model}
 heart_full <- glm(HeartDisease ~ ., family = "binomial", data = heart)
 output <- clean_names(as.data.frame(summary(heart_full)$coefficients)) %>%
   mutate(pr_z = if_else(pr_z < 0.01, 0.00, pr_z),
@@ -153,6 +154,32 @@ output <- clean_names(as.data.frame(summary(heart_full)$coefficients)) %>%
          pr_z = if_else(pr_z == "0", "<0.001", pr_z)) %>%
   kable(digits = 4)
 output
+```
+
+To select for variables, we start by performing both forwards and backwards selection on the full model. These forms of stepwise regression allow us to select for variables that result in the model lowest possible AIC value. AIC itself is an estimator of the predictive error of a model, allowing us to directly assess our model's performance. Performing forwards and backwards selection resulted in the dropping of x variables from our model: $BMI$, $PhysicalHealth$, $MentalHealth$, $Race$, $PhysicalActivity$, and $SkinCancer$.
+
+\renewcommand{\arraystretch}{.8}
+
+```{r stepwise, include = TRUE}
+# takes ~25 secs to run
+step_model <- stepAIC(heart_full, direction = "both", trace = FALSE)
+output2 <- clean_names(as.data.frame(summary(step_model)$coefficients)) %>%
+  mutate(pr_z = if_else(pr_z < 0.01, 0.00, pr_z),
+         pr_z = ceiling(pr_z*10000)/10000,
+         pr_z = as.character(pr_z),
+         pr_z = if_else(pr_z == "0", "<0.001", pr_z)) %>%
+  kable(digits = 4)
+output2
+```
+
+To observe our model's initial predictive performance, we performed k-fold cross validation. K-fold cross validation starts by splitting the dataset into k equally sized "folds". Then, for each unique group, 1 fold is held out as the test dataset whereas the other remaining folds combine to form the training dataset. We found that for values 1 < k < 21, k = 5 produced the highest model accuracy, at 91.28%. This means that our model, on average, is able to predict when a patient has heart disease 91.28% of the time given all values of the selected variables. 
+
+```{r k-fold-cv}
+set.seed(1234)
+train_control <- trainControl(method = "cv", number = 5)
+model <- train(HeartDisease ~ Smoking + AlcoholDrinking + Stroke + DiffWalking + Sex + AgeCategory + Diabetic + GenHealth + SleepTime + Asthma + KidneyDisease, data = heart, method = "glm", 
+               trControl = train_control)
+print(model)
 ```
 
 # Appendix
@@ -194,4 +221,3 @@ output
 `KidneyDisease`: Indicator variable indicating whether or not the respondent has had kidney disease, not including bladder infection or kidney stones.
 
 `SkinCancer`: Indicator variable indicating whether or not the respondent has had skin cancer.
-
