@@ -1,0 +1,197 @@
+---
+title: "Project Prototype"
+author: "Steven Yuan, Conner Byrd, Zach Kinne, Sam Rivera"
+date: "November 10, 2022"
+output:
+  pdf_document:
+    fig_cap: yes
+  html_document:
+    df_print: paged
+header-includes:
+- \usepackage{float}
+- \floatplacement{figure}{H}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, include = FALSE, fig.align = 'center', out.extra = '')
+```
+
+```{r libraries}
+library(dplyr)
+library(readr)
+library(knitr)
+library(tidyverse)
+library(caret)
+library(leaps)
+library(MASS)
+library(tidyr)
+library(ISLR)
+library(ROSE)
+library(rpart)
+library(ggplot2)
+library(tidymodels)
+library(pROC)
+library(corrr)
+library(randomForest)
+library(janitor)
+
+heart = read_csv("heart_2020_cleaned.csv") %>%
+  as_tibble()
+```
+
+# I. Introduction
+
+According to the Center for Disease Control, heart disease is one of the leading causes of death for people of most races in the United States. About half of all Americans half at least one of three key risk factors for heart disease defined by the CDC (high blood pressure, high cholesterol, and smoking), and detecting and preventing the factors that have the greatest impact on heart disease is very important to healthcare, as heart disease is treatable if there is quick access to equipped hospitals and early diagnosis, as well as key predictive screening to analyze the risk factors of patients. To prevent individuals from having heart disease, it is first necessary to be able to determine risk factors which can be used to create actionable prevention plans. Currently, there are several different ways for physicians to diagnose patients that they believe to be at risk for heart disease, which often include measuring blood pressure, cholesterol level, and conducting further tests such as exercise stress tests and electrocardiograms. However, there are many issues with current diagnostic methods. A study of 500 patients found a false positive reading between 77 and 82 percent in patients in patients at risk of heart disease screened by ECG, and a false negative reading between 6 to 7 percent in the same patient population. To more successfully prevent diagnose individuals that are at risk for heart disease, it is first necessary to be able to determine other strong risk factors which can be used to create actionable prevention plans.
+
+In that aim, our research has two main questions. Our first question is what demographic and health factors tend to be the best at predicting the occurrence of heart disease? To answer this question, we plan on creating predictive models to assess the likelihood of a heart disease diagnostic for potential at-risk patients based on a number of factors. Our second question is what health and demographic factors tend to affect the risk of having heart disease? We plan on creating models for the purpose of interpretation to answer this question and provide a greater understanding of signs that patients can analyze to check their risk for heart disease. Overall, nothing has changed from our research question in the proposal.
+
+Answering these questions requires an in-depth and substantial analysis of patient data. Examining health-related statistics and lifestyle choices that impact those numbers may reveal what increases the chance of heart disease and how to alleviate the risk. This necessitates resolving what health factors correlate with a greater percentage of patients that have heart disease. Following those results, we will need to determine an algorithm to optimize health factors related to heart disease prevalence and subsequently develop an action plan to achieve the optimized attributes. With readily-available patient datasets pertaining to heart disease prevalence, answering these questions is a feasible goal for our team within the six week timeframe. With adequate contribution, time-management, and communication by each team member, we will be able to reach conclusive answers. Doing so is positively relevant to the scientific community given the scope of the disease globally and within the United States. With the current metric of nearly half of Americans at risk of heart disease according to the CDC, diagnosing this issue and proposing a solution has the potential to save the lives and prosperity of countless millions around the world.
+
+
+
+# II. Data Sources
+
+The dataset we utilize to answer our research questions is the 2020 CDC survey as part of the Behavioral Risk Factor Surveillance System, which conducts telephone surveys to gather data on the health status of US residents in all 50 states as well as the District of Columbia and three US territories, asking questions about the respondents’ health status and demographic information. The original dataset of nearly 402,000 observations nearly 300 variables was reduced to 18 variables relating to various demographic health conditions, such as BMI, whether the respondent was a smoker, as well as the sex and race of the respondent. The categorical variable of whether the respondent has ever had heart disease is also included in the dataset. We acquired the dataset from Kaggle, and the dataset has already been pre-processed and cleaned by both the CDC and Kaggle, with only observations where all 18 variables have been recorded kept in the cleaned data. 
+
+The dataset utilized for our project is relevant and appropriate for addressing our research question as the dataset is one of the largest datasets available on the health status of individuals that includes information on the prevalence of heart disease. The dataset, collected and curated by the CDC, also has a wide reach across the United States geographically. The datasets size and geographic breadth will allow us to generalize our findings across the United States with fewer issues and also has the potential to provide more predictive power and better data to train our models on than smaller datasets curated elsewhere.
+
+
+
+# III. Modules Used
+
+Being that our project will involve locating relevant predictors and using them to make inferences, Modules 3, 5, and 9 are all very applicable. 
+
+### Module 3 - Probability
+
+Probability is a foundational aspect of statistics and is used heavily when running experiments, making predictions or estimations, using distributions, and much more. Throughout the course of our project, we expect to use probability for numerous applications. The vast majority of these applications will come during the data investigation, data analysis, and final report portions of the project. When looking for significant predictors, probability is used in the form of p-values and is compared against a set alpha level in order to determine statistical significance. We will use probability in this manner to determine which patient variables lead to an increased risk of heart disease. Probability is also an important aspect of statistical distributions, which we expect to use substantially throughout our project. Noting which distributions to use based on the relationships between the response (heart disease indicator) and the various dependent variables will determine useful probabilities that can then be analyzed. Other probabilistic values such as the mean, variance, and standard deviation will also be useful for prediction, estimation, and even data imputation for certain patient lifestyle variables.
+
+### Module 5 - Statistical Inference
+
+Much like probability, statistical inference is highly important for making conclusions about data. In our project, the majority of statistical inference will come in the form of hypothesis testing. Using hypothesis testing, we will be able to test certain variables for their significance when it comes to heart disease occurrence. From there, we can use the techniques described in Module 3 to determine exactly which health and body attributes most prominently lead to an increased risk in heart disease. Much like with probability, we expect to use statistical inference in the data investigation, analysis, and final report sections of the project.
+
+### Module 9 - Prediction & Supervised Machine Learning
+
+Seeing as one of our research questions revolves entirely around prediction, we will be using concepts from Module 9 liberally throughout our project. Linear and Logistic Regression will be very useful to help us construct models of both numerical and categorical data and aid us in our predictive efforts. Other concepts learned in Module 9 will be helpful with checking for correlation between variables, performing stepwise regression, constructing a decision tree or support vector machine, and more. These techniques will allow us to further our understanding of the relationship between predictors and heart disease occurrence and to construct accurate models that we can then make sensible interpretations from. We will also likely end up splitting the data into training and testing cohorts in order to perform further analysis of variable selection and model fit. Prediction will be used in the data analysis and final report portions of the project.
+
+
+
+# IV. Preliminary Results and Methods
+
+## Exploratory Data Analysis
+
+### Pre-Processing
+
+The dataset has been trimmed down to 18 variables and 10,000 observations. The 18 variables included include 17 predictor variables as well as the dependent variable, `HeartDisease`. For a full description of the variables, please see the appendix. We chose to randomly sample 10,000 observations from the initial dataset of 319,795 observations to improve model run time while not substantially affecting the results. 
+
+```{r variable mutation}
+heart <- heart %>%
+  mutate(HeartDisease = as.factor(HeartDisease)) %>%
+  mutate(Smoking = as.factor(Smoking)) %>%
+  mutate(AlcoholDrinking = as.factor(AlcoholDrinking)) %>%
+  mutate(Stroke = as.factor(Stroke)) %>%
+  mutate(DiffWalking = as.factor(DiffWalking)) %>%
+  mutate(Sex = as.factor(Sex)) %>%
+  mutate(AgeCategory = as.factor(AgeCategory)) %>%
+  mutate(Race = as.factor(Race)) %>%
+  mutate(Diabetic = as.factor(Diabetic)) %>%
+  mutate(PhysicalActivity = as.factor(PhysicalActivity)) %>%
+  mutate(GenHealth = as.factor(GenHealth)) %>%
+  mutate(Asthma = as.factor(Asthma)) %>%
+  mutate(KidneyDisease = as.factor(KidneyDisease)) %>%
+  mutate(SkinCancer = as.factor(SkinCancer))
+```
+
+```{r random sampling of data}
+set.seed(1234)
+heart <- sample_n(heart, 10000)
+```
+
+Some of the variables, such as `PhysicalHealth`, `MentalHealth`, and `SleepTime`, make more sense being a proportion of the number of days in the month or number of hours in the day, as `PhysicalHealth` and `MentalHealth` are limited to the number of days in a month and `SleepTime` is limited to 24 hours. Thus, we scale them to be in-between 0 and 1.
+
+```{r}
+heart <- heart %>%
+  mutate(PhysicalHealth = PhysicalHealth / 30,
+         MentalHealth = MentalHealth / 30,
+         SleepTime = SleepTime / 30)
+
+
+set.seed(1234)
+splits = initial_split(heart, strata = HeartDisease)
+train = training(splits) # Training data
+test = testing(splits) # Test data
+```
+
+```{r, include = TRUE, fig.width = 5, fig.height = 3, fig.cap = "Counts of Individuals with and without Heart Disease"}
+c4 = c("#0db7c4b0", "#f24745b9")
+eda <- ggplot(data = heart, mapping = aes(x = HeartDisease)) +
+  geom_bar(fill = c4) +
+  labs(y = "Count")
+eda
+```
+
+As shown above, the data is heavily imbalanced, with far more observations where heart disease was not observed than where it was observed. Imbalanced data poses a problem, as the model being trained would be dominated by the majority class, which in this case is where the patient does not have heart disease. The model would predict the majority class more effectively than the minority class, which is undesirable in this case as we want to ensure a high sensitivity rate as it is far more important to be able to correctly identify individuals with heart disease. A technique to reduce the negative impact of imbalanced datasetes is by subsampling the data. Thus, we upsample the minority class by sampling with replacement so the two classes have the same size.
+
+```{r upsampling}
+trainup <- upSample(x = train[, -ncol(train)], y = train$HeartDisease)
+
+c4 = c("#0db7c4b0", "#f24745b9")
+eda <- ggplot(data = trainup, mapping = aes(x = HeartDisease)) +
+  geom_bar(fill = c4) +
+  ggtitle("Count of Heart Disease in Data") +
+  labs(y = "Count")
+eda
+```
+
+With the data all processed and cleaned, we then fit our initial full model. This will be the model from which we can further select variables and perform inference. We chose to fit a binomial GLM in order to model multiple numerical and categorical predictors against our response variable at once. 
+
+```{r full model, include = TRUE}
+heart_full <- glm(HeartDisease ~ ., family = "binomial", data = heart)
+output <- clean_names(as.data.frame(summary(heart_full)$coefficients)) %>%
+  mutate(pr_z = if_else(pr_z < 0.01, 0.00, pr_z),
+         pr_z = ceiling(pr_z*10000)/10000,
+         pr_z = as.character(pr_z),
+         pr_z = if_else(pr_z == "0", "<0.001", pr_z)) %>%
+  kable(digits = 4)
+output
+```
+
+# Appendix
+
+## Full Description of Variables 
+
+`HeartDisease`: An indicator variable that equals 1 if respondents indicate they have had coronary heart disease (CHD) or myocardial infarction (MI).
+
+`BMI`: Body Mass Index (BMI)
+
+`Smoking`: Indicator variable that indicates if the respondent has smoked at least 100 cigarettes, equal to 5 packs, in their life
+
+`AlcoholDrinking`: Indicator variable that indicates if the respondent identifies as a heavy drinker (defined as having more than 14 drinks per week for adult men and more than 7 drinks per week for adult women).
+
+`Stroke`: Indicator variable that indicates whether or not the respondent has had a stroke.
+
+`PhysicalHealth`: The number of days over the past 30 days the respondent has had physical illness or industry.
+
+`MentalHealth`: The number of days over the past 30 days the respondent has had poor mental health.
+
+`DiffWalking`: Indicator variable that indicates if the respondent has had serious difficulty walking or climbing stairs.
+
+`Sex`: Indicator variable that indicates the sex of the respondent as male or female.
+
+`AgeCategory`: The age of the respondent, split into 14 levels.
+
+`Race`: The imputed race/ethnicity of the respondent
+
+`Diabetic`: Whether or not the respondent has had diabetes.
+
+`PhysicalActivity`: Indicator variable indicating whether or not the respondent has done physical activity or exercise during the past 30 days other than their regular job.
+
+`GenHealth`: The respondent's self-identification of their general health, split into five different levels, from "poor" to "excellent".
+
+`SleepTime`: The average amount of sleep the respondent gets in a 24-hour period.
+
+`Asthma`: Indicator variable indicating whether or not the respondent has had asthma.
+
+`KidneyDisease`: Indicator variable indicating whether or not the respondent has had kidney disease, not including bladder infection or kidney stones.
+
+`SkinCancer`: Indicator variable indicating whether or not the respondent has had skin cancer.
+
