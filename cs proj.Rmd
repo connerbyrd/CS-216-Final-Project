@@ -16,32 +16,62 @@ library(tidyverse)
 library(caret)
 library(leaps)
 library(MASS)
+library(ISLR)
+library(randomForest)
+library(pROC)
+library(stringr)
+library(e1071)
+library(kableExtra)
+library(patchwork)
+library(mice)
 ```
 
 ```{r data import & cleaning, include=FALSE}
 hd <- read_csv("heart_2020_cleaned.csv")
 hd$HeartDisease <- ifelse(hd$HeartDisease == "Yes", 1, 0)
+
+# random sampling of data
+set.seed(73)
+hd <- sample_n(hd, 10000)
 ```
 
-```{r full model}
-hd_full <- glm(HeartDisease ~ ., family = "binomial", data = hd)
+# We remove PhysicalHealth, MentalHealth, DiffWalking, and GenHealth for being self-reported and somewhat arbitrary.
+
+```{r partial model}
+hd_full <- glm(HeartDisease ~ BMI + Smoking + AlcoholDrinking + Stroke + Sex +
+                 AgeCategory + Race + Diabetic + PhysicalActivity + SleepTime + 
+                 Asthma + KidneyDisease + SkinCancer, family = "binomial", data = hd)
 summary(hd_full)
 ```
 
 ```{r stepwise-backward}
-step_model <- stepAIC(hd_full, direction = "backward", trace = FALSE)
+# removes BMI & SkinCancer
+step_model <- stepAIC(hd_full, direction = "both", trace = FALSE)
 summary(step_model)
 ```
 
-```{r stepwise-forward}
-step_model <- stepAIC(hd_full, direction = "forward", trace = FALSE)
-summary(step_model)
+```{r k-fold-cv}
+set.seed(73)
+train_control <- trainControl(method = "cv", number = 5)
+model <- train(HeartDisease ~ Smoking + AlcoholDrinking + Stroke + 
+                 Sex + AgeCategory + Race + Diabetic + PhysicalActivity + 
+                 SleepTime + Asthma + KidneyDisease, data = hd, method = "lm", 
+               trControl = train_control)
+print(model)
 ```
 
-- k-fold cv
-- stuff for prediction
-
-```{r}
-hd_risk <- glm(HeartDisease ~ Smoking + PhysicalHealth, family = "binomial", data = hd)
-summary(hd_risk)
+```{r decision-trees}
+x <- model.matrix(HeartDisease~., hd)[,-1]
+y <- hd$HeartDisease
 ```
+
+```{r, echo=FALSE, fig.height=4, fig.width=6}
+set.seed(1)
+rf.heart <- randomForest(HeartDisease ~ ., data = hd, mtry = sqrt(11), ntree = 100)
+
+plot(rf.heart)
+legend("top", colnames(rf.heart$err.rate),col=1:6,cex=0.8,fill=1:6,legend = "")
+```
+
+- random sampling/subsetting of data
+- removing self-reported variables
