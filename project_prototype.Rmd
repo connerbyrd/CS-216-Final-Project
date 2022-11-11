@@ -35,6 +35,7 @@ library(corrr)
 library(randomForest)
 library(janitor)
 library(sjPlot)
+library(kableExtra)
 
 heart = read_csv("heart_2020_cleaned.csv") %>%
   as_tibble()
@@ -132,20 +133,21 @@ eda
 
 As shown above, the data is heavily imbalanced, with far more observations where heart disease was not observed than where it was observed. Imbalanced data poses a problem, as the model being trained would be dominated by the majority class, which in this case is where the patient does not have heart disease. The model would predict the majority class more effectively than the minority class, which is undesirable in this case as we want to ensure a high sensitivity rate as it is far more important to be able to correctly identify individuals with heart disease. A technique to reduce the negative impact of imbalanced datasetes is by subsampling the data. Thus, we upsample the minority class by sampling with replacement so the two classes have the same size.
 
-```{r upsampling}
+```{r upsampling, include = TRUE, fig.width = 5, fig.height = 3, fig.cap = "Upsampled Counts of Individuals with and without Heart Disease"}
 trainup <- upSample(x = train[, -ncol(train)], y = train$HeartDisease)
 
 c4 = c("#0db7c4b0", "#f24745b9")
 eda <- ggplot(data = trainup, mapping = aes(x = HeartDisease)) +
   geom_bar(fill = c4) +
-  ggtitle("Count of Heart Disease in Data") +
   labs(y = "Count")
 eda
 ```
 
 With the data all processed and cleaned, we then fit our initial full model. This will be the model from which we can further select variables and perform inference. We chose to fit a binomial GLM in order to model multiple numerical and categorical predictors against our response variable at once. 
 
-```{r full model}
+\renewcommand{\arraystretch}{.8}
+
+```{r full model, include = TRUE}
 heart_full <- glm(HeartDisease ~ ., family = "binomial", data = heart)
 output <- clean_names(as.data.frame(summary(heart_full)$coefficients)) %>%
   mutate(pr_z = if_else(pr_z < 0.01, 0.00, pr_z),
@@ -156,7 +158,7 @@ output <- clean_names(as.data.frame(summary(heart_full)$coefficients)) %>%
 output
 ```
 
-To select for variables, we start by performing both forwards and backwards selection on the full model. These forms of stepwise regression allow us to select for variables that result in the model lowest possible AIC value. AIC itself is an estimator of the predictive error of a model, allowing us to directly assess our model's performance. Performing forwards and backwards selection resulted in the dropping of x variables from our model: $BMI$, $PhysicalHealth$, $MentalHealth$, $Race$, $PhysicalActivity$, and $SkinCancer$.
+To select for variables, we began by performing both forwards and backwards selection on the full model. These forms of stepwise regression allow us to select for variables that result in the model lowest possible AIC value. AIC itself is an estimator of the predictive error of a model, allowing us to directly assess our model's performance. Performing forwards and backwards selection resulted in the dropping of 6 variables from our model: $BMI$, $PhysicalHealth$, $MentalHealth$, $Race$, $PhysicalActivity$, and $SkinCancer$.
 
 \renewcommand{\arraystretch}{.8}
 
@@ -172,15 +174,60 @@ output2 <- clean_names(as.data.frame(summary(step_model)$coefficients)) %>%
 output2
 ```
 
-To observe our model's initial predictive performance, we performed k-fold cross validation. K-fold cross validation starts by splitting the dataset into k equally sized "folds". Then, for each unique group, 1 fold is held out as the test dataset whereas the other remaining folds combine to form the training dataset. We found that for values 1 < k < 21, k = 5 (5-fold cross validation) produces the highest model accuracy, at 91.28%.
+To observe our model's initial predictive performance, we performed k-fold cross validation. K-fold cross validation starts by splitting the dataset into k equally sized "folds". Then, for each unique group, 1 fold is held out as the test dataset whereas the other remaining folds combine to form the training dataset. We found that for values 1 < k < 21, k = 5 (5-fold cross validation) produced the highest model accuracy, at 91.28%.
 
-```{r k-fold-cv}
+```{r k-fold-cv, include = TRUE}
 set.seed(1234)
 train_control <- trainControl(method = "cv", number = 5)
 model <- train(HeartDisease ~ Smoking + AlcoholDrinking + Stroke + DiffWalking + Sex + AgeCategory + Diabetic + GenHealth + SleepTime + Asthma + KidneyDisease, data = heart, method = "glm", 
                trControl = train_control)
 print(model)
 ```
+
+For further interpretation and analysis of our model, we fit a random forest. A random forest combines multiple decision trees (in this case, 20) in order to yield the most common prediction class for certain values of the predictor variables. The out-of-bag error from this model (the black line) is 0.1%, meaning we expect this model to classify patients incorrectly around 0.1% of the time. We can also see the false positive rate (green) and false negative rate (red) that comprise this out-of-bag error.
+
+```{r decision-trees}
+x <- model.matrix(HeartDisease~., trainup)[,-1]
+y <- trainup$HeartDisease
+```
+
+```{r, include = TRUE, echo = FALSE, fig.height = 4, fig.width = 6, fig.cap = "Error Lines for Random Forest"}
+set.seed(1)
+rf.heart <- randomForest(HeartDisease ~ ., data = trainup, mtry = sqrt(11), ntree = 20)
+
+plot(rf.heart)
+legend("top", colnames(rf.heart$err.rate),col=1:6,cex=0.8,fill=1:6)
+
+confusion <- round(rf.heart$confusion, 4) %>% as.character()
+flag.1 <- c("Out-of-bag Error", "", "Actually 0", "Actually 1")
+flag.2 <- c("0.1%", "Predicted as 0", confusion[1], confusion[2])
+flag.3 <- c("","Predicted as 1", confusion[3], confusion[4])
+flag.4 <- c("", "Class Error", confusion[5], confusion[6])
+tibble(flag.1, flag.2, flag.3, flag.4) %>% 
+  kable(col.names = rep(" ", 4),
+        caption = "Output of the optimal Random Forest model in the first MICE Chain") %>% 
+  row_spec(1, bold = T) %>% 
+  kable_styling(latex_options = "HOLD_position") %>% 
+  pack_rows(index = c(" " = 1, "Confusion Matrix" = 3))
+```
+
+
+
+# IV. Reflection and Next Steps
+
+### Successes
+
+### Challenges
+
+### Collaboration Plan Reflection
+
+The project has been going smoothly for all members and the collaboration plan has been effective in its approach. Despite our busy, conflicting schedules and time commitments, we have been able to meet on Zoom, in-person, and even in-class in order to discuss and work on our project. We have spent roughly 3-4 hours each per week on the project, contributing and communicating with each other effectively. During Zoom meetings, we are able to quickly chat about progress updates and work together to identify and solve problems. During in-person meetings, we are generally able to work more collaboratively on parts of the project that are a bit more tedious or intensive for one individual to complete. After each meeting, we agree on our next steps and split up the work so that the load is roughly even for each group member. We plan on continuing this collaboration plan for the remainder of the project with the only thing changing being a slight uptick in the amount of weekly hours we each expect to put in. 
+
+### Next Steps
+
+The primary goal of our next steps will be to focus on the conclusions and interpretations of our models. An ROC curve and measure of specificity sensitivity will be added to allow us to interpret our k-fold cross validation model and get a better understanding of our primary model's predictability. This will give us a better diagnostic and visual to assess model performance. With these ROC curves, we can then analyze the area under the curve in order determine concrete classification rates for our model. In addition, the random forest model and its accompanying confusion matrix will continue to be tidied up and there will be more substantial dialogue on the meaning of the output in the context of our data. We will also have a comprehensive results and conclusions section added in order to more formally answer our research questions and present the figures obtained by our models in a more interpretable manner. Finally, certain figures and tables will need additional tidying in order to make their output look more presentable for our final report.
+
+
 
 # Appendix
 
