@@ -1,7 +1,7 @@
 ---
-title: "Project Prototype"
+title: "CS216 - Final Project"
 author: "Steven Yuan (szy2), Conner Byrd (ctb43), Zach Kinne (zpk), Sam Rivera (sfr11)"
-date: "November 10, 2022"
+date: "December 8, 2022"
 output:
   pdf_document:
     fig_cap: yes
@@ -36,7 +36,6 @@ library(randomForest)
 library(janitor)
 library(sjPlot)
 library(kableExtra)
-
 heart = read_csv("heart_2020_cleaned.csv") %>%
   as_tibble()
 ```
@@ -74,12 +73,10 @@ heart = heart %>%
       (BMI > 30) ~ "Obese"
    )
  )
-
 heart <- heart %>%
   mutate(PhysicalHealth = PhysicalHealth / 30,
          MentalHealth = MentalHealth / 30,
          SleepTime = SleepTime / 30)
-
 heart <- heart %>%
   mutate(HeartDisease = as.factor(HeartDisease)) %>%
   mutate(Smoking = as.factor(Smoking)) %>%
@@ -101,7 +98,6 @@ heart <- heart %>%
 ```{r random sampling of data, echo = FALSE}
 set.seed(1234)
 heart_sample <- sample_n(heart, 10000)
-
 splits = initial_split(heart_sample, strata = HeartDisease)
 train = training(splits) # Training data
 test = testing(splits) # Test data
@@ -121,7 +117,6 @@ As shown above, the data is heavily imbalanced, with far more observations where
 
 ```{r upsampling, echo = FALSE, fig.width = 5, fig.height = 3, fig.cap = "Upsampled Counts of Individuals with and without Heart Disease"}
 trainup <- upSample(x = train[, -ncol(train)], y = train$HeartDisease)
-
 c4 = c("#0db7c4b0", "#f24745b9")
 eda <- ggplot(data = trainup, mapping = aes(x = HeartDisease)) +
   geom_bar(fill = c4) +
@@ -152,6 +147,7 @@ plot_smoking = ggplot(heart, aes(x = Smoking, fill = HeartDisease)) +
   ggtitle("Heart Disease vs Smoking")
 plot_smoking
 ```
+
 The plot above displays the prevalence of heart disease by whether or not the respondent is a smoker (defined as having smoked at least 100 cigarettes in the study). From the visual analysis, it appears that whether an individual is smoking may be positively correlated with a higher chance of heart disease.
 
 ```{r echo = FALSE, include = TRUE}
@@ -205,7 +201,7 @@ output
 
 ## Model for Prediction
 
-Whereas we utilize the full model for inference, we are interested in model performance for prediction. To select for models, we utilize stepwise selection, which consists of iteratively adding and removing predictors, in the predictive model, to find the subset of variables resulting in the best performing model with the lowest prediction error. To select for variables, we began by performing both forwards and backwards selection on the full model. These forms of stepwise regression allow us to select for variables that result in the model lowest possible AIC value. AIC itself is an estimator of the predictive error of a model, allowing us to directly assess our model's performance. Rather than utilizing 
+Whereas we utilize the full model for inference, we are interested in model performance for prediction. To select for models, we utilize stepwise selection, which consists of iteratively adding and removing predictors, in the predictive model, to find the subset of variables resulting in the best performing model with the lowest prediction error. To select for variables, we began by performing both forwards and backwards selection on the full model. These forms of stepwise regression allow us to select for variables that result in the model lowest possible AIC value. AIC itself is an estimator of the predictive error of a model, allowing us to directly assess our model's performance.
 
 Performing forwards and backwards selection resulted in the dropping of 6 variables from our model: $BMI$, $PhysicalHealth$, $MentalHealth$, $Race$, $PhysicalActivity$, and $SkinCancer$.
 
@@ -215,7 +211,7 @@ Performing forwards and backwards selection resulted in the dropping of 6 variab
 #splits1 = initial_split(heart_sample, strata = HeartDisease)
 #train1 = training(splits) # Training data
 #test1 = testing(splits) # Test data
-# takes ~25 secs to run
+#takes ~25 secs to run
 step_model <- stepAIC(heart_full, direction = "both", trace = FALSE)
 output2 <- clean_names(as.data.frame(summary(step_model)$coefficients)) %>%
   mutate(pr_z = if_else(pr_z < 0.01, 0.00, pr_z),
@@ -230,11 +226,13 @@ output2
 
 ### Full Model for Inference
 
-We plan on adding the interpretation of the significant coefficients in our final project. As we have not finalized certain aspects of our model, such as whether or not we will utilize a larger sample of the data once we figure out runtime constraints, we have held off on interpreting our model output as the output and coefficients are subject to change.
+SmokingYES(.1901), AlchoholDrinkingYES(.5441), StrokeYES(1.0265), DiffWalkingYES(.3737), SexMale(.7575), AgeCategory80+(2.3623), DiabeticYES(.4200), GenHealthPoor(1.6418), AthsmaYES(.2555), KidneyDiseaseYES(.7999)'
+
+Being that we used a logistic regression model to perform inference, we can interpret the coefficients in our results as the expected increase in log-odds of having heart disease for each predictor. At the alpha = 0.05 level, we note 10 predictor variables that appear to be statistically significant for predicting heart disease. The odds that an individual who has smoked at least 100 cigarettes in their lifetime ($SmokingYes$) will develop heart disease is expected to be $e^{1.901}$ = 1.2094 times greater than an individual who hasn't. The odds that a male who drinks at least 14 alcoholic drinks per week or female who drinks at least 7 alcoholic drinks per week 
 
 ### Predictive Model
 
-To observe our model's initial predictive performance, we performed k-fold cross validation. K-fold cross validation starts by splitting the dataset into k equally sized "folds". Then, for each unique group, 1 fold is held out as the test dataset whereas the other remaining folds combine to form the training dataset. We found that for values 1 < k < 21, k = 5 (5-fold cross validation) produced the highest model accuracy, at 91.56%.
+To observe our model's initial predictive performance, we performed k-fold cross validation. K-fold cross validation starts by splitting the dataset into k equally sized "folds". Then, for each unique group, 1 fold is held out as the test dataset whereas the other remaining folds combine to form the training dataset. We found that for values 1 < k < 21, k = 5 (5-fold cross validation) produced the highest model accuracy, at 91.28%.
 
 ```{r k-fold-cv, echo = FALSE, include = TRUE}
 set.seed(1234)
@@ -244,7 +242,7 @@ model <- train(HeartDisease ~ Smoking + AlcoholDrinking + Stroke + DiffWalking +
 print(model)
 ```
 
-For further interpretation and analysis of our model, we fit a random forest. A random forest combines multiple decision trees (in this case, 20) in order to yield the most common prediction class for certain values of the predictor variables. The out-of-bag error from this model (the black line) is 0.1%, meaning we expect this model to classify patients incorrectly around 0.1% of the time. We can also see the false positive rate (green) and false negative rate (red) that comprise this out-of-bag error.
+For further interpretation and analysis of our model, we fit a random forest. A random forest combines multiple decision trees (in this case, 20) in order to yield the most common prediction class for certain values of the predictor variables. The out-of-bag error from this model (the black line) is 0.1%, meaning we expect this model to classify patients incorrectly around 0.1% of the time. We can also observe the false positive rate (green) and false negative rate (red) that comprise this out-of-bag error.
 
 ```{r decision-trees, echo = FALSE}
 x <- model.matrix(HeartDisease~., trainup)[,-1]
@@ -254,10 +252,8 @@ y <- trainup$HeartDisease
 ```{r echo = FALSE, include = TRUE, fig.height = 4, fig.width = 6, fig.cap = "Error Lines for Random Forest"}
 set.seed(1)
 rf.heart <- randomForest(HeartDisease ~ ., data = trainup, mtry = sqrt(11), ntree = 20)
-
 plot(rf.heart)
 legend("top", colnames(rf.heart$err.rate),col=1:6,cex=0.8,fill=1:6)
-
 confusion <- round(rf.heart$confusion, 4) %>% as.character()
 flag.1 <- c("Out-of-bag Error", "", "Actually 0", "Actually 1")
 flag.2 <- c("0.1%", "Predicted as 0", confusion[1], confusion[2])
@@ -272,7 +268,7 @@ tibble(flag.1, flag.2, flag.3, flag.4) %>%
 ```
 
 
-# V. Reflection and Next Steps
+# V. Limitations and Future Work
 
 ### Successes
 
