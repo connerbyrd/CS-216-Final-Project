@@ -26,6 +26,7 @@ library(leaps)
 library(MASS)
 library(tidyr)
 library(ISLR)
+library(gridExtra)  
 library(ROSE)
 library(rpart)
 library(ggplot2)
@@ -56,7 +57,7 @@ The dataset utilized for our project is relevant and appropriate for addressing 
 
 ## Data Pre-Processing
 
-The data was already pre-processed by both the CDC and the uploader to Kagle, and had no missing variables. Due to the size of the dataset and the high runtime with fitting models using such a large dataset, we trim down the dataset to 50,000 observations by sampling 10,000 observations randomly in the dataset, and split the sampled dataset into both a testing and a training set. The 18 variables included include 17 predictor variables as well as the dependent variable, `HeartDisease`. Some of the variables, such as `PhysicalHealth`, `MentalHealth`, and `SleepTime`, make more sense being a proportion of the number of days in the month or number of hours in the day, as `PhysicalHealth` and `MentalHealth` are limited to the number of days in a month and `SleepTime` is limited to 24 hours. Thus, we scale them to be in-between 0 and 1. Furthermore, `BMI` is transformed into a categorical variable defined to conventional medical norms (BMI of under 18.5 is underweight, 18.5 to 25 is considered normal, 25 to 30 is considered overweight, and over 30 is considered obese) as medically, there are very few differences in changes in BMI within a category, and most medical professionals utilize BMI as a categorical variable.
+The data was already pre-processed by both the CDC and the uploader to Kagle, and had no missing variables. Due to the size of the dataset and the high runtime with fitting models using such a large dataset, we trim down the dataset to 10,000 observations by sampling 10,000 observations randomly in the dataset, and split the sampled dataset into both a testing and a training set. The 18 variables included include 17 predictor variables as well as the dependent variable, `HeartDisease`. Some of the variables, such as `PhysicalHealth`, `MentalHealth`, and `SleepTime`, make more sense being a proportion of the number of days in the month or number of hours in the day, as `PhysicalHealth` and `MentalHealth` are limited to the number of days in a month and `SleepTime` is limited to 24 hours. Thus, we scale them to be in-between 0 and 1. Furthermore, `BMI` is transformed into a categorical variable defined to conventional medical norms (BMI of under 18.5 is underweight, 18.5 to 25 is considered normal, 25 to 30 is considered overweight, and over 30 is considered obese) as medically, there are very few differences in changes in BMI within a category (ex. a BMI of 21 and 20 are considered both medically to be normal BMIs), and most medical professionals utilize BMI as a categorical variable.
 
 ```{r variable mutation, echo = FALSE}
 heart = heart %>%
@@ -99,61 +100,57 @@ test = testing(splits) # Test data
 
 
 
-```{r, echo = FALSE, include = TRUE, fig.width = 5, fig.height = 3, fig.cap = "Counts of Individuals with and without Heart Disease"}
+```{r, echo = FALSE, include = TRUE, fig.width = 5, fig.height = 2.5}
 c4 = c("#0db7c4b0", "#f24745b9")
 eda <- ggplot(data = heart, mapping = aes(x = HeartDisease)) +
   geom_bar(fill = c4) +
-  labs(y = "Count")
+  labs(x = "Heart Disease", y = "Count") +
+  ggtitle("Counts of Individual With and Without Heart Disease")
 eda
 ```
 
-As shown above, the data is heavily imbalanced, with far more observations where heart disease was not observed than where it was observed. Imbalanced data poses a problem, as the model being trained would be dominated by the majority class, which in this case is where the patient does not have heart disease. The model would predict the majority class more effectively than the minority class, which is undesirable in this case as we want to ensure a high sensitivity rate as it is far more important to be able to correctly identify individuals with heart disease. A technique to reduce the negative impact of imbalanced datasetes is by subsampling the data. Thus, we upsample the minority class by sampling with replacement so the two classes have the same size to create an upsampled training dataset.
+As shown in the plot above, the data is heavily imbalanced, with far more observations where heart disease was not observed than where it was observed. Imbalanced data poses a problem, as the model being trained would be dominated by the majority class, which in this case is where the patient does not have heart disease. The model would predict the majority class more effectively than the minority class, which is undesirable in this case as we want to ensure a high sensitivity rate as it is far more important to be able to correctly identify individuals with heart disease. A technique to reduce the negative impact of imbalanced datasets is by subsampling the data. Thus, we upsample the minority class by sampling with replacement so the two classes have the same size to create an upsampled training dataset.
 
-```{r upsampling, echo = FALSE, fig.width = 5, fig.height = 3, fig.cap = "Upsampled Counts of Individuals with and without Heart Disease"}
+```{r upsampling, echo = FALSE, fig.width = 5, fig.height = 2.5}
 trainup <- upSample(x = train[, -ncol(train)], y = train$HeartDisease)
 c4 = c("#0db7c4b0", "#f24745b9")
 eda <- ggplot(data = trainup, mapping = aes(x = HeartDisease)) +
   geom_bar(fill = c4) +
-  labs(y = "Count")
+  labs(y = "Count", fill = "Heart Disease")
 ```
 
 ## Exploratory Data Analysis
 
-We first explore a few potential interesting relationships between the prevalence of heart disease and some general lifestyle and health factors that may be of interest, such as BMI and whether a person smokes or drinks. We first decided to explore any potential relationship between BMI and the prevalence of Heart Disease, as although the usage of BMI is controversial, BMI is still popular in its medical usage in regards to association with heart disease.
+We first explore a few potential interesting relationships between the prevalence of heart disease and some general lifestyle and health factors that may be of interest, such as BMI and whether a person smokes or drinks. We first decided to explore any potential relationship between BMI and the prevalence of Heart Disease, as although the usage of BMI is controversial, BMI is still popular in its medical usage in regards to association with heart disease in commonly accepted medical practices and literature.
 
-```{r echo = FALSE, include = TRUE}
+```{r echo = FALSE, include = TRUE, fig.height = 2.5}
 # Plot between Heart Disease and BMI
 plot_bmi = ggplot(heart, aes(x = BMI, fill = HeartDisease)) +
   geom_bar(position = "fill") +
   xlim("Underweight", "Normal", "Overweight", "Obese") +
-  labs(x = "Body Mass Index", y = "Proportion") +
+  labs(x = "Body Mass Index", y = "Proportion", fill = "Heart Disease") +
   ggtitle("Heart Disease vs BMI")
 plot_bmi
 ```
 
-The plot above displays the prevalence of heart disease by BMI classification. From the visual analysis, it appears that higher body mass may be correlated with a higher chance of heart disease.
+The plot above displays the prevalence of heart disease by BMI classification. From the visual analysis, it appears that higher body mass may be correlated with a higher chance of heart disease, and that underweight BMI may also be correlated with a higer chance of heart disease compared to normal BMI, which is in line with common medical belief that the normal BMI range is the healthiest for general health.
 
-```{r echo = FALSE, include = TRUE}
+```{r echo = FALSE, include = TRUE, fig.height = 2.5}
 # Plot between Heart Disease and Smoking
 plot_smoking = ggplot(heart, aes(x = Smoking, fill = HeartDisease)) +
   geom_bar(position = "fill") +
-  labs(x = "Smoking", y = "Proportion") +
+  labs(x = "Smoking", y = "Proportion", fill = "Heart Disease") +
   ggtitle("Heart Disease vs Smoking")
-plot_smoking
-```
 
-The plot above displays the prevalence of heart disease by whether or not the respondent is a smoker (defined as having smoked at least 100 cigarettes in the study). From the visual analysis, it appears that whether an individual is smoking may be positively correlated with a higher chance of heart disease.
-
-```{r echo = FALSE, include = TRUE}
 # Plot between Heart Disease and AlcoholDrinking
 plot_Alcohol_Drinking = ggplot(heart, aes(x = AlcoholDrinking, fill = HeartDisease)) +
   geom_bar(position = "fill") +
   labs(x = "Alcohol Drinking", y = "Proportion") +
   ggtitle("Heart Disease vs Alcohol Drinking")
-plot_Alcohol_Drinking
+grid.arrange(plot_smoking, plot_Alcohol_Drinking, ncol = 2)   
 ```
 
-The plot above displays the prevalence of heart disease by whether or not the respondent is a heavy drinker. From the visual analysis, it appears that heavy drinking may be associated with a lower chance of heart disease, interestingly.
+The plots above display the prevalence of heart disease by whether or not the respondent is a smoker (defined as having smoked at least 100 cigarettes) or a heavy drinker. From the visual analysis, it appears that being a smoker may be positively associated with a higher chance of heart disease. Interestingly, it appears that heavy drinking may be associated with a lower chance of heart disease.
 
 # III. Modules Used
 
