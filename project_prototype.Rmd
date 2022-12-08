@@ -21,6 +21,7 @@ library(dplyr)
 library(readr)
 library(knitr)
 library(tidyverse)
+library(gridExtra)
 library(caret)
 library(leaps)
 library(MASS)
@@ -222,14 +223,14 @@ Being that we used a logistic regression model to perform inference, we can inte
 
 ### Predictive Model
 
-To observe our model's initial predictive performance, we performed k-fold cross validation. K-fold cross validation starts by splitting the dataset into k equally sized "folds". Then, for each unique group, 1 fold is held out as the test dataset whereas the other remaining folds combine to form the training dataset. We found that for values 1 < k < 21, k = 5 (5-fold cross validation) produced the highest model accuracy, at 91.28%.
+To observe our model's initial predictive performance, we performed k-fold cross validation. K-fold cross validation starts by splitting the dataset into k equally sized "folds". Then, for each unique group, 1 fold is held out as the test dataset whereas the other remaining folds combine to form the training dataset. We found that for values 1 < k < 21, k = 5 (5-fold cross validation) produced the highest model accuracy, at 91.28% (see Appendix D for full output).
 
 ```{r k-fold-cv, echo = FALSE, include = TRUE}
 set.seed(1234)
 train_control <- trainControl(method = "cv", number = 5)
-model <- train(HeartDisease ~ Smoking + AlcoholDrinking + Stroke + DiffWalking + Sex + AgeCategory + Diabetic + GenHealth + SleepTime + Asthma + KidneyDisease, data = heart_sample, method = "glm", 
+modelpred <- train(HeartDisease ~ Smoking + AlcoholDrinking + Stroke + DiffWalking + Sex + AgeCategory + Diabetic + GenHealth + SleepTime + Asthma + KidneyDisease, data = heart_sample, method = "glm", 
                trControl = train_control)
-print(model)
+print(modelpred)
 ```
 
 For further interpretation and analysis of our model, we fit a random forest. A random forest combines multiple decision trees (in this case, 20) in order to yield the most common prediction class for certain values of the predictor variables. The out-of-bag error from this model (the black line) is 0.1%, meaning we expect this model to classify patients incorrectly around 0.1% of the time. We can also observe the false positive rate (green) and false negative rate (red) that comprise this out-of-bag error.
@@ -313,14 +314,20 @@ Missingness: The original dataset collected by the CDC consisted of over 400,000
 
 ## Appendix B: Full Model Output for Inferential Logistic Regression Model
 
-```{r full model, echo = FALSE, include = TRUE}
+```{r full model output, echo = FALSE, include = TRUE}
 output_glm_inference
 ```
 
 ## Appendix C: Full Model Output for Prediction Logistic Regression Model
 
-```{r stepwise, echo = FALSE, include = TRUE}
+```{r stepwise model output, echo = FALSE, include = TRUE}
 model_prediction
+```
+
+## Appendix D: Predictive Model K-Fold Validation Output
+
+```{r k-fold-cv output, echo = FALSE, include = TRUE}
+print(modelpred)
 ```
 
 # Citations
