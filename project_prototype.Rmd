@@ -41,7 +41,7 @@ heart = read_csv("heart_2020_cleaned.csv") %>%
   as_tibble()
 ```
 
-The full markdown, all code, and data can be accessed at teh following Github repository (https://github.com/connerbyrd/CS-216-Final-Project).
+The full markdown, all code, and data can be accessed at the following Github repository (https://github.com/connerbyrd/CS-216-Final-Project).
 
 # I. Introduction
 
@@ -51,13 +51,13 @@ In that aim, our research has two main questions. Our first question is what dem
 
 # II. Data Sources
 
-The dataset we utilize to answer our research questions is the 2020 CDC survey as part of the BehavioralRisk Factor Surveillance System, which conducts telephone surveys to gather data on the health status ofUS residents in all 50 states as well as the District of Columbia and three US territories, asking questionsabout the respondents’ health status and demographic information (please see Works Cited for link to data).The original dataset of nearly 402,000 observations nearly 300 variables was reduced to 18 variables relatingto various demographic health conditions, such as BMI, whether the respondent was a smoker, as well asthe sex and race of the respondent. The categorical variable of whether the respondent has ever had heart disease is also included in the dataset. We acquired the dataset from Kaggle, and the dataset has alreadybeen pre-processed and cleaned by both the CDC and Kaggle, with only observations where all 18 variableshave been recorded kept in the cleaned data (See Appendix A for a description of the variables).
+The dataset we utilize to answer our research questions is the 2020 CDC survey as part of the Behavioral Risk Factor Surveillance System, which conducts telephone surveys to gather data on the health status of US residents in all 50 states as well as the District of Columbia and three US territories, asking questions about the respondents’ health status and demographic information (please see Works Cited for link to data).The original dataset of nearly 402,000 observations nearly 300 variables was reduced to 18 variables relating to various demographic health conditions, such as BMI, whether the respondent was a smoker, as well as the sex and race of the respondent. The categorical variable of whether the respondent has ever had heart disease is also included in the dataset. We acquired the dataset from Kaggle, and the dataset has already been pre-processed and cleaned by both the CDC and Kaggle, with only observations where all 18 variables have been recorded kept in the cleaned data (See Appendix A for a description of the variables).
 
-The dataset utilized for our project is relevant and appropriate for addressing our research question as thedataset is one of the largest datasets available on the health status of individuals that includes informationon the prevalence of heart disease. The dataset, collected and curated by the CDC, also has a wide reachacross the United States geographically. The datasets size and geographic breadth will allow us to generalizeour findings across the United States with fewer issues and also has the potential to provide more predictivepower and better data to train our models on than smaller datasets curated elsewhere.
+The dataset utilized for our project is relevant and appropriate for addressing our research question as the dataset is one of the largest datasets available on the health status of individuals that includes information on the prevalence of heart disease. The dataset, collected and curated by the CDC, also has a wide reach across the United States geographically. The datasets size and geographic breadth will allow us to generalize our findings across the United States with fewer issues and also has the potential to provide more predictive power and better data to train our models on than smaller datasets curated elsewhere.
 
 ## Data Pre-Processing
 
-The data was already pre-processed by both the CDC and the uploader to Kagle, and had no missing variables. Due to the size of the dataset and the high runtime with fitting models using such a large dataset, we trim down the dataset by sampling 100,000 observations randomly in the dataset, and split the sampled dataset into both a testing and a training set. The 18 variables included include 17 predictor variables as well as the dependent variable, `HeartDisease`. Some of the variables, such as `PhysicalHealth`, `MentalHealth`, and `SleepTime`, make more sense being a proportion of the number of days in the month or number of hours in the day, as `PhysicalHealth` and `MentalHealth` are limited to the number of days in a month and `SleepTime` is limited to 24 hours. Thus, we scale them to be in-between 0 and 1. Furthermore, `BMI` is transformed into a categorical variable defined to conventional medical norms (BMI of under 18.5 is underweight, 18.5 to 25 is considered normal, 25 to 30 is considered overweight, and over 30 is considered obese) as medically, there are very few differences in changes in BMI within a category (ex. a BMI of 21 and 20 are considered both medically to be normal BMIs), and most medical professionals utilize BMI as a categorical variable.
+The data was already pre-processed by both the CDC and Kaggle, and has no missing variables. Due to the size of the dataset and the high runtime with fitting models using such a large dataset, we trim down the dataset by sampling 10,000 observations randomly from the dataset, and split the sampled dataset into both a testing and a training set. The 18 variables included include 17 predictor variables as well as the dependent variable, `HeartDisease`. Some of the variables, such as `PhysicalHealth`, `MentalHealth`, and `SleepTime`, make more sense being a proportion of the number of days in the month or number of hours in the day, as `PhysicalHealth` and `MentalHealth` are limited to the number of days in a month and `SleepTime` is limited to 24 hours. Thus, we scale them to be in-between 0 and 1. Furthermore, `BMI` is transformed into a categorical variable defined to conventional medical norms (BMI of under 18.5 is underweight, 18.5 to 25 is considered normal, 25 to 30 is considered overweight, and over 30 is considered obese) as medically, there are very few differences in changes in BMI within a category (ex. a BMI of 21 and 20 are considered both medically to be normal BMIs), and most medical professionals utilize BMI as a categorical variable.
 
 ```{r variable mutation, echo = FALSE}
 heart = heart %>%
@@ -98,18 +98,17 @@ train = training(splits) # Training data
 test = testing(splits) # Test data
 ```
 
-
-
 ```{r, echo = FALSE, include = TRUE, fig.width = 5, fig.height = 2.5}
 c4 = c("#0db7c4b0", "#f24745b9")
 eda <- ggplot(data = heart, mapping = aes(x = HeartDisease)) +
   geom_bar(fill = c4) +
   labs(y = "Count") +
-  ggtitle("Counts of Individuals With and Without Heart Disease \n in Data")
+  ggtitle("Counts of Individuals With and \n Without Heart Disease in Data")
+
 eda
 ```
 
-As shown above, the data is heavily imbalanced, with far more observations where heart disease was not observed than where it was observed. Imbalanced data poses a problem, as the model being trained would be dominated by the majority class, which in this case is where the patient does not have heart disease. The model would predict the majority class more effectively than the minority class, which is undesirable in this case as we want to ensure a high sensitivity rate as it is far more important to be able to correctly identify individuals with heart disease. A technique to reduce the negative impact of imbalanced datasetes is by subsampling the data. Thus, we upsample the minority class by sampling with replacement so the two classes have the same size to create an upsampled training dataset.
+As shown above, the data is heavily imbalanced, with far more observations where heart disease was not observed than where it was observed. Imbalanced data poses a problem, as the model being trained would be dominated by the majority class, which in this case is where the patient does not have heart disease. The model would predict the majority class more effectively than the minority class, which is undesirable in this case as we want to ensure a high sensitivity rate as it is far more important to be able to correctly identify individuals with heart disease. A technique to reduce the negative impact of imbalanced datasets is by subsampling the data. Thus, we upsample the minority class by sampling with replacement so the two classes have the same size to create an upsampled training dataset.
 
 ```{r upsampling, echo = FALSE, fig.width = 5, fig.height = 3, fig.cap = "Upsampled Counts of Individuals with and without Heart Disease"}
 trainup <- upSample(x = train[, -ncol(train)], y = train$HeartDisease)
@@ -151,7 +150,7 @@ plot_Alcohol_Drinking = ggplot(heart, aes(x = AlcoholDrinking, fill = HeartDisea
 grid.arrange(plot_smoking, plot_Alcohol_Drinking, ncol = 2) 
 ```
 
-The plots above display the prevalence of heart disease by whether or not the respondent is a smoker (defined as having smoked at least 100 cigarettes) and whether or not the respondent is a heavy drinker. From the plots, it appears that smokers may be positively associated with a higher chance of heart disease. Interestingly, it appears that heavy drinking may be associated with a lower chance of heart disease.
+The plots above display the prevalence of heart disease by whether or not the respondent is a smoker (defined as having smoked at least 100 cigarettes) and whether or not the respondent is a heavy drinker (defined as 14 drinks in the past week for males, 7 for females). From the plots, it appears that smokers may be positively associated with a higher chance of heart disease. Interestingly, it appears that heavy drinking may be associated with a lower chance of heart disease.
 
 # III. Modules Used
 
@@ -172,14 +171,13 @@ Seeing as one of our research questions revolves entirely around prediction, we 
 
 # IV. Preliminary Results and Methods
 
-See 'Discussion of Results' below for a higher-level discussion of important findings
 A higher-level discussion of important and notable findings are included in the "Discussion of Results" section below. See Appendices B and C for the full model outputs of the model for inference and for prediction, respectively.
 
 ## Model for Inference
 
 We decided to utilize a logistic regression model, with whether the person has heart disease (`HeartDisease`) as the response variable, to examine the relationship between the log-odds of heart disease and various predictors. The general logistic regression model form is formulated by the equation:
 $$\log(\frac{P_i}{1-P_i}) = \beta_0+\beta_1X_{1,i}+\beta_2X_{2,i}+...+\beta_kX_{k,i}$$
-Using logistic regression lends itself well to both inference and prediction. For the purposes of inference, we decided to fit a model including all variables, as we are interesting in exploring the relationship between the predictors and the response variable. We do not utilize any automated variable selection method for our inference exploration, as variable selection methods such as stepwise selection may drop variables based on its criteria that we are still interested in examining the relationship with the response variable. We utilize the training split from the 100,000-large sample as the data to train the model on, as mentioned in section II.
+Using logistic regression lends itself well to both inference and prediction. For the purposes of inference, we decided to fit a model including all variables, as we are interesting in exploring the relationship between the predictors and the response variable. We do not utilize any automated variable selection method for our inference exploration, as variable selection methods such as stepwise selection may drop variables based on its criteria that we are still interested in examining the relationship with the response variable. We utilize the training split from the 10,000-large sample as the data to train the model on, as mentioned in section II.
 
 \renewcommand{\arraystretch}{.8}
 
@@ -196,7 +194,7 @@ output_glm_inference <- clean_names(as.data.frame(summary(heart_full)$coefficien
 
 ## Model for Prediction
 
-Whereas we utilize the full model for inference, we are interested in model performance for prediction. To select for models, we utilize stepwise selection, which consists of iteratively adding and removing predictors, in the predictive model, to find the subset of variables resulting in the best performing model with the lowest prediction error. To select for variables, we began by performing both forwards and backwards selection on the full model. These forms of stepwise regression allow us to select for variables that result in the model lowest possible AIC value. AIC itself is an estimator of the predictive error of a model, allowing us to directly assess our model's performance.
+Whereas we utilize the full model for inference, we are interested in model performance for prediction. To select for the model, we utilize stepwise selection, which consists of iteratively adding and removing predictors, in the predictive model, to find the subset of variables resulting in the best performing model with the lowest prediction error. To select for variables, we began by performing both forwards and backwards selection on the full model. These forms of stepwise regression allow us to select for variables that result in the model lowest possible AIC value. AIC itself is an estimator of the predictive error of a model, allowing us to directly assess our model's performance.
 
 Performing forwards and backwards selection resulted in the dropping of 6 variables from our model: $BMI$, $PhysicalHealth$, $MentalHealth$, $Race$, $PhysicalActivity$, and $SkinCancer$.
 
@@ -221,7 +219,17 @@ model_prediction <- clean_names(as.data.frame(summary(step_model)$coefficients))
 
 ### Full Model for Inference
 
-Being that we used a logistic regression model to perform inference, we can interpret the coefficients in our results as the expected increase in log-odds of having heart disease for each predictor. At the alpha = 0.05 level, we note 10 predictor variables that appear to be statistically significant for predicting heart disease. The odds that an individual who has smoked at least 100 cigarettes in their lifetime ($SmokingYes$) will develop heart disease is expected to be $e^{0.1901}$ = 1.2094 times greater than an individual who hasn't. The odds that a male who drinks at least 14 alcoholic drinks per week or female who drinks at least 7 alcoholic drinks per week ($AlcoholDrinkingYes$) will develop heart disease is expected to be $e^{0.5441}$ = 1.7231 times greater than an individual who doesn't. The odds than an individual who has had a stroke in their lifetime ($StrokeYes$) will develop heart disease is expected to be $e^{1.0265}$ = 2.7913 times greater than an individual who hasn't. The odds that an individual who has difficulty walking or climbing stairs ($DiffWalkingYes$) will develop heart disease is expected to be $e^{0.3737}$ = 1.4531 times greater than an individual who doesn't. The odds that an individual who is male ($SexMale$) will develop heart disease is expected to be $e^{0.7575}$ = 2.1329 times greater than an individual who is female. Six different age categories appeared to be significant predictors of heart disease in our model: 55 to 59, 60 to 64, 65 to 69, 70 to 74, 75 to 79, and 80+. Of these, the 80+ age category had the greatest coefficient of 2.3623. The odds that an individual who is 80 years old or older ($AgeCategory80 or older$) will develop heart disease is $e^{2.3623}$ = 10.6153 times greater than someone who is 24 years old or younger (the baseline category). The odds that an individual who is diabetic ($DiabetesYes$) will develop heart disease is expected to be $e^{.4200}$ = 1.5220 times greater than an individual who isn't. All categories of general health appeared to be significant predictors of heart disease in our model. Of these, the poor general health category had the greatest coefficient of 1.6418. The odds that an individual with poor general health ($GenHealthPoor$) will develop heart disease is expected to be $e^{1.6418}$ = 5.1645 times greater than those who aren't. The odds that an individual who has asthma ($AsthmaYes$) will develop heart disease is expected to be $e^{0.2555}$ = 1.2911 times greater than an individual who doesn't. The odds that an individual who has kidney disease ($KidneyDiseaseYes$) will develop heart disease is expected to be $e^{0.7999}$ = 2.2253 times greater than an individual who doesn't. 
+Being that we used a logistic regression model to perform inference, we can interpret the coefficients in our results as the expected increase in log-odds of having heart disease for each predictor. Using $\alpha = 5$ as the significance level, we note that 10 predictor variables appear to be statistically significant. In the interest of Parsimony, we interpret these ten variables and their coefficient. The following interpretations are all mode assuming that all other variables are held constant:
+
+The following age categories appeared to be significant in our model: 45-49, 50-54, 55-59, 60-64, 65 to 69, 70 to 74, 75 to 79, and 80+. Of these, the 80+ age category had the greatest coefficient of 2.3623. The odds that an individual who is 80 years old or older ($AgeCategory80 or older$) will develop heart disease is $e^{2.3623}$ = 10.6153 times greater than someone who is 24 years old or younger (the baseline category). The odds that an individual who is male ($SexMale$) will develop heart disease is expected to be $e^{0.7575}$ = 2.1329 times greater than an individual who is female. 
+
+The odds that an individual who has smoked at least 100 cigarettes in their lifetime ($SmokingYes$) will develop heart disease is expected to be $e^{0.1901}$ = 1.2094 times greater than an individual who hasn't. The odds that a male who drinks at least 14 alcoholic drinks per week or female who drinks at least 7 alcoholic drinks per week ($AlcoholDrinkingYes$) will develop heart disease is expected to be $e^{0.5441}$ = 1.7231 times greater than an individual who doesn't. 
+
+The odds than an individual who has had a stroke in their lifetime ($StrokeYes$) will develop heart disease is expected to be $e^{1.0265}$ = 2.7913 times greater than an individual who hasn't. The odds that an individual who is diabetic ($DiabetesYes$) will develop heart disease is expected to be $e^{.4200}$ = 1.5220 times greater than an individual who isn't. The odds that an individual who has asthma ($AsthmaYes$) will develop heart disease is expected to be $e^{0.2555}$ = 1.2911 times greater than an individual who doesn't. The odds that an individual who has kidney disease ($KidneyDiseaseYes$) will develop heart disease is expected to be $e^{0.7999}$ = 2.2253 times greater than an individual who doesn't. The odds that an individual who has difficulty walking or climbing stairs ($DiffWalkingYes$) will develop heart disease is expected to be $e^{0.3737}$ = 1.4531 times greater than an individual who doesn't. 
+
+All categories of self-reported general health appeared to be significant predictors of heart disease in our model. Of these, the self-categorized poor general health category had the greatest coefficient of 1.6418. The odds that an individual with poor general health ($GenHealthPoor$) will develop heart disease is expected to be $e^{1.6418}$ = 5.1645 times greater than those who aren't. 
+
+Overall, most of the findings are in line with our expectations and current medical literature, as generally variables that are associated with poorer health are also associated with higher odds of heart disease. However, interestingly, none of the BMI variables were significant in the model, perhaps reinforcing the growing idea that BMI itself is not a useful medical metric among medical professionals. Furthermore, `PhysicalHealth` and `MentalHealth`, self-reported overall physical anad mental health, are not significant, which is interesting as self-reported general health is significant.
 
 ### Predictive Model
 
@@ -232,49 +240,48 @@ set.seed(1234)
 train_control <- trainControl(method = "cv", number = 5)
 modelpred <- train(HeartDisease ~ Smoking + AlcoholDrinking + Stroke + DiffWalking + Sex + AgeCategory + Diabetic + GenHealth + SleepTime + Asthma + KidneyDisease, data = heart_sample, method = "glm", 
                trControl = train_control)
-print(modelpred)
+
 ```
 
-For further interpretation and analysis of our model, we fit a random forest. A random forest combines multiple decision trees (in this case, 20) in order to yield the most common prediction class for certain values of the predictor variables. The out-of-bag error from this model (the black line) is 0.1%, meaning we expect this model to classify patients incorrectly around 0.1% of the time. We can also observe the false positive rate (green) and false negative rate (red) that comprise this out-of-bag error.
+For further interpretation and analysis of our model, we fit a random forest. A random forest combines multiple decision trees (in this case, 20) in order to yield the most common prediction class for certain values of the predictor variables (see Appendix E for the Random Forest error output table). The out-of-bag error from this model (the black line) is 0.1%, meaning we expect this model to classify patients incorrectly around 0.1% of the time. We can also observe the false positive rate (green) and false negative rate (red) that comprise this out-of-bag error. Overall, our predictive model has good predictive ability, especially when compared with the current methodologies utilized in the medical field, as mentioned in the introduction.
 
 ```{r decision-trees, echo = FALSE}
 x <- model.matrix(HeartDisease~., trainup)[,-1]
 y <- trainup$HeartDisease
 ```
 
-```{r echo = FALSE, include = TRUE, fig.height = 4, fig.width = 6, fig.cap = "Error Lines for Random Forest"}
+```{r echo = FALSE, include = TRUE, fig.height = 3, fig.width = 6, fig.cap = "Error Lines for Random Forest"}
 set.seed(1)
 rf.heart <- randomForest(HeartDisease ~ ., data = trainup, mtry = sqrt(11), ntree = 20)
 plot(rf.heart)
 legend("top", colnames(rf.heart$err.rate),col=1:6,cex=0.8,fill=1:6)
-confusion <- round(rf.heart$confusion, 4) %>% as.character()
-flag.1 <- c("Out-of-bag Error", "", "Actually 0", "Actually 1")
-flag.2 <- c("0.1%", "Predicted as 0", confusion[1], confusion[2])
-flag.3 <- c("","Predicted as 1", confusion[3], confusion[4])
-flag.4 <- c("", "Class Error", confusion[5], confusion[6])
-tibble(flag.1, flag.2, flag.3, flag.4) %>% 
-  kable(col.names = rep(" ", 4),
-        caption = "Output of the optimal Random Forest model in the first MICE Chain") %>% 
-  row_spec(1, bold = T) %>% 
-  kable_styling(latex_options = "HOLD_position") %>% 
-  pack_rows(index = c(" " = 1, "Confusion Matrix" = 3))
-```
 
+```
 
 # V. Limitations and Future Work
 
-### Limitations
+Below, we list out a number of potential limitations to our results, as well as future work that could be undertaken to improve on our analysis.
 
-Model Specification: Steven can u talk about this thanks
+One limitation is model specification. The logistic regression model requires certain assumptions, including that there is a linear relationship between the logic of the outcome and each predictor, there are no influential values, and there are no high intercorrelations among the predictors. In choosing to utilize a logistic regression model, we assumed that there are no violations of these assumptions, which seemed reasonable. However, if any of these assumptions are violated, then a logistic regression model may not have been appropriate and thus another model class should have been utilized. In future work, we can more rigorously analyze these assumptions, such as creating smoothed scatter plots to analyze linearity, use Cook's distance to analyze influential values, and conduct Variance Inflation Factor analysis to analyze multicollinearity.
 
-Generalizability: While the dataset we used is relatively broad in its scope and application, some of its aspects could have an impact on its generalizability. The data in the dataset comes from the Behavioral Risk Factor Surveillance System (BRFSS). Run by the CDC, this system collects health status data from individuals via telephone call. While this is likely the simplest way for this form of data collection, it does introduce a voluntary response bias that could affect the composition of the data. For example, someone with health issues could be more keen to sharing their health status data as opposed to a healthy individual who may believe the survey has no importance for them. Additionally, some individuals may not respond to the phone call altogether. These biases could skew the results of our methodology in a way we are not able to account for. In addition, the survey was conducted only on individuals within the United States. While the USA is a demographically diverse nation, its population only accounts for 4.25% of the Earth's total population. It is very well possible that in other countries, certain predictors that were deemed statistically insignificant here could have very little effect on the prediction of heart disease and vice versa. As a result, the conclusions we obtained are only generalizable to adults residing in the 50 US states, Washington DC, and three US territories.
+Another limitation is generalizability. While the dataset we used is relatively broad in its scope and application, some of its aspects could have an impact on its generalizability. The data in the dataset comes from the Behavioral Risk Factor Surveillance System (BRFSS). Run by the CDC, this system collects health status data from individuals via telephone call. While this is likely the simplest way for this form of data collection, it does introduce a voluntary response bias that could affect the composition of the data. For example, someone with health issues could be more keen to sharing their health status data as opposed to a healthy individual who may believe the survey has no importance for them. Additionally, some individuals may not respond to the phone call altogether. These biases could skew the results of our methodology in a way we are not able to account for. In addition, the survey was conducted only on individuals within the United States, and thus the results are not generalizable to the global population. Potential future studies can include utilizing additional datasets that cover more geography and polling methods to improve the generalizability of our results. 
 
-Missingness: The original dataset collected by the CDC consisted of over 400,000 observations of 300 different health and demographic variables. This was then reduced to the 18 variables in the dataset we used by its curator on Kaggle. Although this was done "to select the most relevant variables" and "be usable for machine learning projects", no in depth statistical detail was given for the removal of these variables. Therefore, we are unable to determine their possible influence on our results. It is possible that some of these variables could have been statistically significant predictors of heart disease in our inferential model or aided in the model accuracy for our predictive model.
+Missingness may also be a limitation. The original dataset collected by the CDC consisted of over 400,000 observations of 300 different health and demographic variables. This was then reduced to the 18 variables in the dataset we used by its curator on Kaggle. Although this was done "to select the most relevant variables" and "be usable for machine learning projects", no in depth statistical detail was given for the removal of these variables. Therefore, we are unable to determine their possible influence on our results. It is possible that some of these variables could have been statistically significant predictors of heart disease in our inferential model or aided in the model accuracy for our predictive model. Potential future studies can include utilizing the original CDC data and all variables in our analysis, and mitigating the missingness with variable imputation methods.
 
-### Next Steps
+Lastly, potential future studies may include adding interactions effects. Certain predictors may be related to other predictors. The incorporation of interaction effects may potentially allow for a more comprehensive model by indicating how the relationship between a predictor and the dependent variable changes depending on the value of another predictor (such as making gender an interaction effect so we can analyze how the other predictors' relationship with the dependent variable varies by gender). 
 
+# VI. Conclusion
 
-# VII. Appendix
+In this study, we sought to both understand the associations between a biological and demographic factors and the odds of having heart disease as well as create a predictive model for heart disease through an analysis of the CDC's 2020 annual health survey. To do so, we created two logistic regression models, where one was used to understand inferential relationships between the independent variables and the odds of having heart disease, and the other one was created using stepwise selection to act as as predictive model. We found that a number of biological and demographic factors are associated with a change in heart disease odds, and most of the factors we expected to have strong associations with a change in heart disease since they are also associated with changes in overall health. However, most interestingly, we found that BMI does not have a strong association with heart disease. We were also able to achieve high predictive accuracy with our predictive model that is able to match or surpass many commonly utilized methods in the real world currently.
+
+# Citations
+
+Kaggle. (n.d.). Personal Key Indicators of Heart Disease. Kaggle. Retrieved October 15, 2022, from
+https://www.kaggle.com/datasets/kamilpytlak/personal-key-indicators-of-heart-disease
+
+\newpage
+
+# Appendix
 
 ## Appendix A: Full Description of Variables 
 
@@ -314,11 +321,16 @@ Missingness: The original dataset collected by the CDC consisted of over 400,000
 
 `SkinCancer`: Indicator variable indicating whether or not the respondent has had skin cancer.
 
+\newpage
+
 ## Appendix B: Full Model Output for Inferential Logistic Regression Model
 
 ```{r full model output, echo = FALSE, include = TRUE}
 output_glm_inference
 ```
+
+
+\newpage 
 
 ## Appendix C: Full Model Output for Prediction Logistic Regression Model
 
@@ -332,7 +344,19 @@ model_prediction
 print(modelpred)
 ```
 
-# Citations
+## Appendix E: Output of the Optimal Random Forest Model in the First MICE Chain
 
-Kaggle. (n.d.). Personal Key Indicators of Heart Disease. Kaggle. Retrieved October 15, 2022, from
-https://www.kaggle.com/datasets/kamilpytlak/personal-key-indicators-of-heart-disease
+```{r echo = FALSE, include = TRUE, fig.height = 4, fig.width = 6}
+
+confusion <- round(rf.heart$confusion, 4) %>% as.character()
+flag.1 <- c("Out-of-bag Error", "", "Actually 0", "Actually 1")
+flag.2 <- c("0.1%", "Predicted as 0", confusion[1], confusion[2])
+flag.3 <- c("","Predicted as 1", confusion[3], confusion[4])
+flag.4 <- c("", "Class Error", confusion[5], confusion[6])
+tibble(flag.1, flag.2, flag.3, flag.4) %>% 
+  kable(col.names = rep(" ", 4),
+        caption = "Output of the optimal Random Forest model in the first MICE Chain") %>% 
+  row_spec(1, bold = T) %>% 
+  kable_styling(latex_options = "HOLD_position") %>% 
+  pack_rows(index = c(" " = 1, "Confusion Matrix" = 3))
+```
