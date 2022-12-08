@@ -26,7 +26,6 @@ library(leaps)
 library(MASS)
 library(tidyr)
 library(ISLR)
-library(gridExtra)  
 library(ROSE)
 library(rpart)
 library(ggplot2)
@@ -41,19 +40,19 @@ heart = read_csv("heart_2020_cleaned.csv") %>%
   as_tibble()
 ```
 
-The full markdown, code, and data can be accessed at the following Github repository (https://github.com/connerbyrd/CS-216-Final-Project).
+The full markdown, all code, and data can be accessed at teh following Github repository (https://github.com/connerbyrd/CS-216-Final-Project).
 
 # I. Introduction
 
-According to the Center for Disease Control, heart disease is one of the leading causes of death for people of most races in the United States. About half of all Americans half at least one of three key risk factors for heart disease defined by the CDC (high blood pressure, high cholesterol, and smoking), and detecting and preventing the factors that have the greatest impact on heart disease is very important to healthcare, as heart disease is treatable if there is quick access to equipped hospitals and early diagnosis, as well as key predictive screening to analyze the risk factors of patients. To prevent individuals from having heart disease, it is first necessary to be able to determine risk factors which can be used to create actionable prevention plans. Currently, there are several different ways for physicians to diagnose patients that they believe to be at risk for heart disease, which often include measuring blood pressure, cholesterol level, and conducting further tests such as exercise stress tests and electrocardiograms. However, there are many issues with current diagnostic methods. A study of 500 patients found a false positive reading between 77 and 82 percent in patients in patients at risk of heart disease screened by ECG, and a false negative reading between 6 to 7 percent in the same patient population. To more successfully prevent diagnose individuals that are at risk for heart disease, it is first necessary to be able to determine other strong risk factors which can be used to create actionable prevention plans.
+According to the Center for Disease Control, heart disease is one of the leading causes of death for people ofmost races in the United States. About half of all Americans half at least one of three key risk factors forheart disease defined by the CDC (high blood pressure, high cholesterol, and smoking), and detecting andpreventing the factors that have the greatest impact on heart disease is very important to healthcare, asheart disease is treatable if there is quick access to equipped hospitals and early diagnosis, as well as keypredictive screening to analyze the risk factors of patients. To prevent individuals from having heart disease,it is first necessary to be able to determine risk factors which can be used to create actionable preventionplans. Currently, there are several different ways for physicians to diagnose patients that they believe to beat risk for heart disease, which often include measuring blood pressure, cholesterol level, and conductingfurther tests such as exercise stress tests and electrocardiograms. However, there are many issues with currentdiagnostic methods. A study of 500 patients found a false positive reading between 77 and 82 percent inpatients in patients at risk of heart disease screened by ECG, and a false negative reading between 6 to 7percent in the same patient population. To more successfully prevent diagnose individuals that are at riskfor heart disease, it is first necessary to be able to determine other strong risk factors which can be used tocreate actionable prevention plans.
 
-In that aim, our research has two main questions. Our first question is what demographic and health factors tend to be the best at predicting the occurrence of heart disease? To answer this question, we plan on creating predictive models to assess the likelihood of a heart disease diagnostic for potential at-risk patients based on a number of factors. Our second question is what health and demographic factors tend to affect the risk of having heart disease? We plan on creating models for the purpose of interpretation to answer this question and provide a greater understanding of signs that patients can analyze to check their risk for heart disease. Answering these questions requires an in-depth and substantial analysis of patient data. Doing so is positively relevant to the scientific community given the scope of the disease globally and within the United States. With the current metric of nearly half of Americans at risk of heart disease according to the CDC, diagnosing this issue and proposing a solution has the potential to save the lives and prosperity of countless millions around the world.
+In that aim, our research has two main questions. Our first question is what demographic and health factorstend to be the best at predicting the occurrence of heart disease? To answer this question, we plan oncreating predictive models to assess the likelihood of a heart disease diagnostic for potential at-risk patientsbased on a number of factors. Our second question is what health and demographic factors tend to affect therisk of having heart disease? We plan on creating models for the purpose of interpretation to answer thisquestion and provide a greater understanding of signs that patients can analyze to check their risk for heartdisease. Answering these questions requires an in-depth and substantial analysis of patient data. Doing so ispositively relevant to the scientific community given the scope of the disease globally and within the UnitedStates. With the current metric of nearly half of Americans at risk of heart disease according to the CDC,diagnosing this issue and proposing a solution has the potential to save the lives and prosperity of countlessmillions around the world
 
 # II. Data Sources
 
-The dataset we utilize to answer our research questions is the 2020 CDC survey as part of the Behavioral Risk Factor Surveillance System, which conducts telephone surveys to gather data on the health status of US residents in all 50 states as well as the District of Columbia and three US territories, asking questions about the respondents’ health status and demographic information (please see Works Cited for link to data). The original dataset of nearly 402,000 observations nearly 300 variables was reduced to 18 variables relating to various demographic health conditions, such as BMI, whether the respondent was a smoker, as well as the sex and race of the respondent. The categorical variable of whether the respondent has ever had heart disease is also included in the dataset. We acquired the dataset from Kaggle, and the dataset has already been pre-processed and cleaned by both the CDC and Kaggle, with only observations where all 18 variables have been recorded kept in the cleaned data (see Appendix A for a description of the variables).
+The dataset we utilize to answer our research questions is the 2020 CDC survey as part of the BehavioralRisk Factor Surveillance System, which conducts telephone surveys to gather data on the health status ofUS residents in all 50 states as well as the District of Columbia and three US territories, asking questionsabout the respondents’ health status and demographic information (please see Works Cited for link to data).The original dataset of nearly 402,000 observations nearly 300 variables was reduced to 18 variables relatingto various demographic health conditions, such as BMI, whether the respondent was a smoker, as well asthe sex and race of the respondent. The categorical variable of whether the respondent has ever had heart disease is also included in the dataset. We acquired the dataset from Kaggle, and the dataset has alreadybeen pre-processed and cleaned by both the CDC and Kaggle, with only observations where all 18 variableshave been recorded kept in the cleaned data (See Appendix A for a description of the variables).
 
-The dataset utilized for our project is relevant and appropriate for addressing our research question as the dataset is one of the largest datasets available on the health status of individuals that includes information on the prevalence of heart disease. The dataset, collected and curated by the CDC, also has a wide reach across the United States geographically. The datasets size and geographic breadth will allow us to generalize our findings across the United States with fewer issues and also has the potential to provide more predictive power and better data to train our models on than smaller datasets curated elsewhere. 
+The dataset utilized for our project is relevant and appropriate for addressing our research question as thedataset is one of the largest datasets available on the health status of individuals that includes informationon the prevalence of heart disease. The dataset, collected and curated by the CDC, also has a wide reachacross the United States geographically. The datasets size and geographic breadth will allow us to generalizeour findings across the United States with fewer issues and also has the potential to provide more predictivepower and better data to train our models on than smaller datasets curated elsewhere.
 
 ## Data Pre-Processing
 
@@ -104,24 +103,24 @@ test = testing(splits) # Test data
 c4 = c("#0db7c4b0", "#f24745b9")
 eda <- ggplot(data = heart, mapping = aes(x = HeartDisease)) +
   geom_bar(fill = c4) +
-  labs(x = "Heart Disease", y = "Count") +
-  ggtitle("Counts of Individual With and Without Heart Disease")
+  labs(y = "Count") +
+  ggtitle("Counts of Individuals With and Without Heart Disease \n in Data")
 eda
 ```
 
-As shown in the plot above, the data is heavily imbalanced, with far more observations where heart disease was not observed than where it was observed. Imbalanced data poses a problem, as the model being trained would be dominated by the majority class, which in this case is where the patient does not have heart disease. The model would predict the majority class more effectively than the minority class, which is undesirable in this case as we want to ensure a high sensitivity rate as it is far more important to be able to correctly identify individuals with heart disease. A technique to reduce the negative impact of imbalanced datasets is by subsampling the data. Thus, we upsample the minority class by sampling with replacement so the two classes have the same size to create an upsampled training dataset.
+As shown above, the data is heavily imbalanced, with far more observations where heart disease was not observed than where it was observed. Imbalanced data poses a problem, as the model being trained would be dominated by the majority class, which in this case is where the patient does not have heart disease. The model would predict the majority class more effectively than the minority class, which is undesirable in this case as we want to ensure a high sensitivity rate as it is far more important to be able to correctly identify individuals with heart disease. A technique to reduce the negative impact of imbalanced datasetes is by subsampling the data. Thus, we upsample the minority class by sampling with replacement so the two classes have the same size to create an upsampled training dataset.
 
-```{r upsampling, echo = FALSE, fig.width = 5, fig.height = 2.5}
+```{r upsampling, echo = FALSE, fig.width = 5, fig.height = 3, fig.cap = "Upsampled Counts of Individuals with and without Heart Disease"}
 trainup <- upSample(x = train[, -ncol(train)], y = train$HeartDisease)
 c4 = c("#0db7c4b0", "#f24745b9")
 eda <- ggplot(data = trainup, mapping = aes(x = HeartDisease)) +
   geom_bar(fill = c4) +
-  labs(y = "Count", fill = "Heart Disease")
+  labs(y = "Count")
 ```
 
 ## Exploratory Data Analysis
 
-We first explore a few potential interesting relationships between the prevalence of heart disease and some general lifestyle and health factors that may be of interest, such as BMI and whether a person smokes or drinks. We first decided to explore any potential relationship between BMI and the prevalence of Heart Disease, as although the usage of BMI is controversial, BMI is still popular in its medical usage in regards to association with heart disease in commonly accepted medical practices and literature.
+We first explore a few potential interesting relationships between the prevalence of heart disease and some general lifestyle and health factors that may be of interest, such as BMI and whether a person smokes or drinks. We first decided to explore any potential relationship between BMI and the prevalence of Heart Disease, as although the usage of BMI is controversial, BMI is still popular in its medical usage in regards to association with heart disease.
 
 ```{r echo = FALSE, include = TRUE, fig.height = 2.5}
 # Plot between Heart Disease and BMI
@@ -133,7 +132,7 @@ plot_bmi = ggplot(heart, aes(x = BMI, fill = HeartDisease)) +
 plot_bmi
 ```
 
-The plot above displays the prevalence of heart disease by BMI classification. From the visual analysis, it appears that higher body mass may be correlated with a higher chance of heart disease, and that underweight BMI may also be correlated with a higer chance of heart disease compared to normal BMI, which is in line with common medical belief that the normal BMI range is the healthiest for general health.
+The plot above displays the prevalence of heart disease by BMI classification. From the visual analysis, it appears that higher body mass may be correlated with a higher chance of heart disease than normal BMI. Underweight BMI may also be correlated with a higher chance of heart disease. This seems to reinforce the generally accepted medical concept that a normal BMI is most conducive to better general health.
 
 ```{r echo = FALSE, include = TRUE, fig.height = 2.5}
 # Plot between Heart Disease and Smoking
@@ -142,15 +141,16 @@ plot_smoking = ggplot(heart, aes(x = Smoking, fill = HeartDisease)) +
   labs(x = "Smoking", y = "Proportion", fill = "Heart Disease") +
   ggtitle("Heart Disease vs Smoking")
 
+
 # Plot between Heart Disease and AlcoholDrinking
 plot_Alcohol_Drinking = ggplot(heart, aes(x = AlcoholDrinking, fill = HeartDisease)) +
   geom_bar(position = "fill") +
   labs(x = "Alcohol Drinking", y = "Proportion", fill = "Heart Disease") +
   ggtitle("Heart Disease vs Alcohol Drinking")
-grid.arrange(plot_smoking, plot_Alcohol_Drinking, ncol = 2)   
+grid.arrange(plot_smoking, plot_Alcohol_Drinking, ncol = 2) 
 ```
 
-The plots above display the prevalence of heart disease by whether or not the respondent is a smoker (defined as having smoked at least 100 cigarettes) or a heavy drinker. From the visual analysis, it appears that being a smoker may be positively associated with a higher chance of heart disease. Interestingly, it appears that heavy drinking may be associated with a lower chance of heart disease.
+The plots above display the prevalence of heart disease by whether or not the respondent is a smoker (defined as having smoked at least 100 cigarettes) and whether or not the respondent is a heavy drinker. From the plots, it appears that smokers may be positively associated with a higher chance of heart disease. Interestingly, it appears that heavy drinking may be associated with a lower chance of heart disease.
 
 # III. Modules Used
 
@@ -178,7 +178,7 @@ A higher-level discussion of important and notable findings are included in the 
 
 We decided to utilize a logistic regression model, with whether the person has heart disease (`HeartDisease`) as the response variable, to examine the relationship between the log-odds of heart disease and various predictors. The general logistic regression model form is formulated by the equation:
 $$\log(\frac{P_i}{1-P_i}) = \beta_0+\beta_1X_{1,i}+\beta_2X_{2,i}+...+\beta_kX_{k,i}$$
-Using logistic regression lends itself well to both inference and prediction. For the purposes of inference, we decided to fit a model including all variables, as we are interesting in exploring the relationship between the predictors and the response variable. We do not utilize any automated variable selection method for our inference exploration, as variable selection methods such as stepwise selection may drop variables based on its criteria that we are still interested in examining the relationship with the response variable. We utilize the training split from the 100,000-large sample as the data to train the model on, as mentioned in section II. The results are displayed below.
+Using logistic regression lends itself well to both inference and prediction. For the purposes of inference, we decided to fit a model including all variables, as we are interesting in exploring the relationship between the predictors and the response variable. We do not utilize any automated variable selection method for our inference exploration, as variable selection methods such as stepwise selection may drop variables based on its criteria that we are still interested in examining the relationship with the response variable. We utilize the training split from the 100,000-large sample as the data to train the model on, as mentioned in section II.
 
 \renewcommand{\arraystretch}{.8}
 
@@ -260,27 +260,18 @@ tibble(flag.1, flag.2, flag.3, flag.4) %>%
 
 # V. Limitations and Future Work
 
-### Successes
+### Limitations
 
-Overall, we have made significant progress on the project. We believe that our introduction is essentially complete, as we have provided significant context as well as our research questions. Our data pre-processing is also essentially complete. We believe that our modelling is essentially complete, and our methodology for our models is good. Much of the technical lift has been finished in terms of the actual code. Furthermore, we have made substantial progress
+Model Specification: Steven can u talk about this thanks
 
-### Challenges
+Generalizability: While the dataset we used is relatively broad in its scope and application, some of its aspects could have an impact on its generalizability. The data in the dataset comes from the Behavioral Risk Factor Surveillance System (BRFSS). Run by the CDC, this system collects health status data from individuals via telephone call. While this is likely the simplest way for this form of data collection, it does introduce a voluntary response bias that could affect the composition of the data. For example, someone with health issues could be more keen to sharing their health status data as opposed to a healthy individual who may believe the survey has no importance for them. Additionally, some individuals may not respond to the phone call altogether. These biases could skew the results of our methodology in a way we are not able to account for. In addition, the survey was conducted only on individuals within the United States. While the USA is a demographically diverse nation, its population only accounts for 4.25% of the Earth's total population. It is very well possible that in other countries, certain predictors that were deemed statistically insignificant here could have very little effect on the prediction of heart disease and vice versa. As a result, the conclusions we obtained are only generalizable to adults residing in the 50 US states, Washington DC, and three US territories.
 
-Overall, we still need to decide on what further visuals to use for the exploratory data analysis. For the purposes of the prototype, in the interest of report length, we only included a few variables to visually examine their relationships in the exploratory data analysis section. In the full report, we'll likely add more variables and utilize better visualizations. Furthermore, we'll likely dive deeper in our conclusion and further discuss our results in terms of our predictive model and our inference model. We'll add more diagnostics to examine model performance, as discussed in the Next Steps section. Furthermore, we are also interested in doing model assumption checks for the logistic regression model, but we were struggling with the code and decided to remove it for the time being from the prototype.
-
-Another challenge is the runtime. We plan on trying to solve the long runtime with fitting the models in the future to be able to utilize a larger sample of data.
-
-### Collaboration Plan Reflection
-
-The project has been going smoothly for all members and the collaboration plan has been effective in its approach. Despite our busy, conflicting schedules and time commitments, we have been able to meet on Zoom, in-person, and even in-class in order to discuss and work on our project. We have spent roughly 3-4 hours each per week on the project, contributing and communicating with each other effectively. During Zoom meetings, we are able to quickly chat about progress updates and work together to identify and solve problems. During in-person meetings, we are generally able to work more collaboratively on parts of the project that are a bit more tedious or intensive for one individual to complete. After each meeting, we agree on our next steps and split up the work so that the load is roughly even for each group member. We plan on continuing this collaboration plan for the remainder of the project with the only thing changing being a slight uptick in the amount of weekly hours we each expect to put in. 
+Missingness: The original dataset collected by the CDC consisted of over 400,000 observations of 300 different health and demographic variables. This was then reduced to the 18 variables in the dataset we used by its curator on Kaggle. Although this was done "to select the most relevant variables" and "be usable for machine learning projects", no in depth statistical detail was given for the removal of these variables. Therefore, we are unable to determine their possible influence on our results. It is possible that some of these variables could have been statistically significant predictors of heart disease in our inferential model or aided in the model accuracy for our predictive model.
 
 ### Next Steps
 
-The primary goal of our next steps will be to focus on the conclusions and interpretations of our models. An ROC curve and measure of specificity sensitivity will be added to allow us to interpret our k-fold cross validation model and get a better understanding of our primary model's predictability. This will give us a better diagnostic and visual to assess model performance. With these ROC curves, we can then analyze the area under the curve in order determine concrete classification rates for our model. In addition, the random forest model and its accompanying confusion matrix will continue to be tidied up and there will be more substantial dialogue on the meaning of the output in the context of our data. We will also have a comprehensive results and conclusions section added in order to more formally answer our research questions and present the figures obtained by our models in a more interpretable manner. We'll also add more visuals for the exploratory data analysis section. Once we have finalized our sample size and thus our model results, we will also provide interpretations of the model coefficients. Finally, certain figures and tables will need additional tidying in order to make their output look more presentable for our final report.
 
-
-
-# Appendix
+# VII. Appendix
 
 ## Appendix A: Full Description of Variables 
 
