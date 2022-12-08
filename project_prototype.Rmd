@@ -1,5 +1,5 @@
 ---
-title: "CS216 - Final Project"
+title: "Inference and Prediction of the Occurrence of Heart Disease"
 author: "Steven Yuan (szy2), Conner Byrd (ctb43), Zach Kinne (zpk), Sam Rivera (sfr11)"
 date: "December 8, 2022"
 output:
@@ -189,7 +189,7 @@ output_glm_inference <- clean_names(as.data.frame(summary(heart_full)$coefficien
          pr_z = as.character(pr_z),
          pr_z = if_else(pr_z == "0", "<0.001", pr_z)) %>%
   kable(digits = 4) %>%
-  kable_styling(bootstrap_options = "striped", full_width = F)
+  kable_styling(bootstrap_options = "striped", full_width = F, latex_options = c("hold_position"))
 ```
 
 ## Model for Prediction
@@ -212,7 +212,7 @@ model_prediction <- clean_names(as.data.frame(summary(step_model)$coefficients))
          pr_z = as.character(pr_z),
          pr_z = if_else(pr_z == "0", "<0.001", pr_z)) %>%
   kable(digits = 4) %>%
-  kable_styling(bootstrap_options = "striped", full_width = F)
+  kable_styling(bootstrap_options = "striped", full_width = F, latex_options = c("hold_position"))
 ```
 
 ## Discussion of Results
@@ -255,8 +255,9 @@ set.seed(1)
 rf.heart <- randomForest(HeartDisease ~ ., data = trainup, mtry = sqrt(11), ntree = 20)
 plot(rf.heart)
 legend("top", colnames(rf.heart$err.rate),col=1:6,cex=0.8,fill=1:6)
-
 ```
+
+Overall, these model accuracy and classification error rates are quite low for a model of this type, meaning our model is fairly effective at predicting the occurrence of heart disease given values for each of the relevant predictor variables. This is likely due to the high number of predictors that are significant in predicting heart disease, allowing for a heightened accuracy when combined. This is especially true for predictors such as old age or poor general health, whose coefficients are large, meaning they tend to have a large increase on the expected odds that someone will develop heart disease.
 
 # V. Limitations and Future Work
 
@@ -329,8 +330,7 @@ https://www.kaggle.com/datasets/kamilpytlak/personal-key-indicators-of-heart-dis
 output_glm_inference
 ```
 
-
-\newpage 
+\newpage
 
 ## Appendix C: Full Model Output for Prediction Logistic Regression Model
 
