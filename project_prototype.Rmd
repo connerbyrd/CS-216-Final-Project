@@ -190,7 +190,8 @@ output_glm_inference <- clean_names(as.data.frame(summary(heart_full)$coefficien
          pr_z = ceiling(pr_z*10000)/10000,
          pr_z = as.character(pr_z),
          pr_z = if_else(pr_z == "0", "<0.001", pr_z)) %>%
-  kable(digits = 4)
+  kable(digits = 4) %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
 ```
 
 ## Model for Prediction
@@ -212,7 +213,8 @@ model_prediction <- clean_names(as.data.frame(summary(step_model)$coefficients))
          pr_z = ceiling(pr_z*10000)/10000,
          pr_z = as.character(pr_z),
          pr_z = if_else(pr_z == "0", "<0.001", pr_z)) %>%
-  kable(digits = 4)
+  kable(digits = 4) %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
 ```
 
 ## Discussion of Results
